@@ -1,7 +1,177 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 1 here
-	</body>
-</html>
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #181717;
+    background-color: #f7ecec;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  img {
+    border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 300px;
+  }
+  .center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  }
+  .right {
+    float: right;
+  }
+  .left {
+    float: left;
+  }
+  .column {
+  float: left;
+  width: 25%;
+  padding: 20px;
+}
+
+/* Clear floats after image containers */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Kenny Liao, Mark Chan, CS184</h2>
+
+<p><span style="font-weight: 400;">Task 1:&nbsp;</span></p>
+<p>&nbsp;</p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Walk through how you rasterize triangles in your own words.</span></li>
+</ul>
+<p><strong>Iterate through each pixel/sample within the bounding box of the triangle, for each sample, check if the sample is within the triangle by applying Point-in-Triangle Test, then apply the rasterize_point function if the sample is in the triangle.</strong></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Explain how your algorithm is no worse than one that checks each sample within the bounding box of the triangle.</span></li>
+</ul>
+<p><strong>We implemented box bound rasterization of triangles, which is to draw a box that contains the triangle we are trying to rasterize so that we can start from the top left corners of the box to the bottom right corner of the box instead of starting from (0, 0) all the way to (width, height)</strong></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Show a </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> screenshot of </span><em><span style="font-weight: 400;">basic/test4.svg</span></em><span style="font-weight: 400;"> with the default viewing parameters and with the pixel inspector centered on an interesting part of the scene.</span></li>
+</ul>
+<img src="1.png" class="center">
+<p><span style="font-weight: 400;">Task 2:&nbsp;</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Walk through your supersampling algorithm and data structures. Why is supersampling useful? What modifications did you make to the rasterization pipeline in the process? Explain how you used supersampling to antialias your triangles.</span></li>
+</ul>
+<p><strong>We first adjusted the size of the sample buffer so that we can have more space to fit the extra samples we are going to be capturing. Then, we iterated through each of the rows and cols. For each (row, col), we used another double loop to start our supersampling process by taking sample_rate little pixels and putting them into the vector to store sampled sqrt(sample_rate) * sqrt(sample_rate) of the original pixel so that we can average the color out. Last, we write the value from the averaged result in the sample buffer into the rgb buffer to render.</strong></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Show </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> screenshots of </span><em><span style="font-weight: 400;">basic/test4.svg</span></em><span style="font-weight: 400;"> with the default viewing parameters and sample rates 1, 4, and 16 to compare them side-by-side. Position the pixel inspector over an area that showcases the effect dramatically; for example, a very skinny triangle corner. Explain why these results are observed.</span></li>
+</ul>
+
+<div class="row">
+  <div class="column">
+    <b>Sample Rate 1</b>
+    <img src="supersample-1.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>Sample Rate 4</b>
+    <img src="supersample-4.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>Sample Rate 16</b>
+    <img src="supersample-16.png" style="width:100%">
+  </div>
+</div>
+
+<p>We can clearly see that as the sample rates increase, meaning we are dividing the original pixel into more subpixels, the aliasing is less clear but the edges get more and more blurry. This is because when we supersample, we are breaking down the original high resolution image (the green triangle and the white spaces form a high changing image we are trying to sample) by doing more sampling. Hence, the image after supersampling will contain less jiggies (less sharper changes) but will become blurrier since we lose resolution.</strong>
+
+<p><span style="font-weight: 400;">Task 3:&nbsp;</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Create an updated version of </span><em><span style="font-weight: 400;">svg/transforms/robot.svg</span></em><span style="font-weight: 400;"> with cubeman doing something more interesting, like waving or running. Feel free to change his colors or proportions to suit your creativity. Save your </span><em><span style="font-weight: 400;">svg</span></em><span style="font-weight: 400;"> file as </span><em><span style="font-weight: 400;">my_robot.svg</span></em><span style="font-weight: 400;"> in your </span><em><span style="font-weight: 400;">docs/</span></em><span style="font-weight: 400;"> directory and show a </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> screenshot of your rendered drawing in your write-up. Explain what you were trying to do with cubeman in words.</span></li>
+</ul>
+<p><strong>We tried to make our robot do the move in ballet dance right before spinning where the dancer crosses legs and keeps their arms in a horizontal line for balance. We rotated the right leg by 28 and the left leg by -28 degrees with the following code.</strong></p>
+<p><strong>&nbsp;&nbsp;&nbsp;</strong><strong>&lt;</strong><strong>g</strong> <strong>transform</strong><strong>=</strong><strong>"rotate(28)"</strong><strong>&gt;&lt;/</strong><strong>g</strong><strong>&gt; // rotate right by 28</strong></p>
+<p><strong>&nbsp;&nbsp;&nbsp;</strong><strong>&lt;</strong><strong>g</strong> <strong>transform</strong><strong>=</strong><strong>"rotate(-28)"</strong><strong>&gt;&lt;/</strong><strong>g</strong><strong>&gt; // rotate left by 28</strong></p>
+<p><strong>We applied the rotation before other transformations to get the desired results.</strong></p>
+<img class="center" src="i_wanna_pee.png">
+<p><br /></p>
+<p><span style="font-weight: 400;">Task 4:&nbsp;</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Explain barycentric coordinates in your own words and use an image to aid you in your explanation. One idea is to use a </span><em><span style="font-weight: 400;">svg</span></em><span style="font-weight: 400;"> file that plots a single triangle with one red, one green, and one blue vertex, which should produce a smoothly blended color triangle.</span></li>
+</ul>
+<p><strong>We plotted the triangle with the following code</strong></p>
+<p><strong>&lt;</strong><strong>colortri</strong> <strong>points</strong><strong>=</strong><strong>"100 300 500 100 500 700"</strong> <strong>colors</strong><strong>=</strong><strong>"0 0 0 1 0.625 1 0 1 1 0.0625 0 1 "</strong><strong>/&gt;</strong></p>
+<p><strong>We used black, green, and red for our three of the vertices. Then, we use barycentric coordinates to calculate the texture for each pixel within the triangle so that we get smoothly varying colors across the triangle. Referencing lecture/5-15/texture-mapping, our </strong><strong>(</strong><strong>&alpha;, &beta;, &gamma;</strong><strong>) = (red, black, green)</strong><strong>. So we can calculate sample point</strong></p>
+<p><strong>&nbsp;</strong><strong>(x, y) =</strong><strong>&alpha;A+&beta;B+&gamma;C</strong><strong>) </strong><strong>to get the correct color.</strong></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Show a </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> screenshot of </span><em><span style="font-weight: 400;">svg/basic/test7.svg</span></em><span style="font-weight: 400;"> with default viewing parameters and sample rate 1. If you make any additional images with color gradients, include them.</span></li>
+</ul>
+<img class="center" src="juicy_pizza.png">
+<br />
+<p><span style="font-weight: 400;">Task 5:</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Explain pixel sampling in your own words and describe how you implemented it to perform texture mapping. Briefly discuss the two different pixel sampling methods, nearest and bilinear.</span></li>
+</ul>
+<p><strong>Pixel sampling: loop through the screen space, if the point is within the triangle, we calculate the barycentric coordinates, and then apply the calculated barycentric coordinates on the texture space to get the uv values in uv coordinates. After we get the uv values, we can calculate the color based on either the nearest or bilinear sampling method.</strong></p>
+<p><strong>Nearest sampling: round the uv position and apply the nearest sample.</strong></p>
+<p><strong>Bilinear sampling: use lerp function, calculate the sample/color base on the weighted 4 samples around.</strong></p>
+<p>&nbsp;</p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Check out the </span><em><span style="font-weight: 400;">svg</span></em><span style="font-weight: 400;"> files in the </span><em><span style="font-weight: 400;">svg/texmap/</span></em><span style="font-weight: 400;"> directory. Use the pixel inspector to find a good example of where bilinear sampling clearly defeats nearest sampling. Show and compare four </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> screenshots using nearest sampling at 1 sample per pixel, nearest sampling at 16 samples per pixel, bilinear sampling at 1 sample per pixel, and bilinear sampling at 16 samples per pixel.</span></li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Comment on the relative differences. Discuss when there will be a large difference between the two methods and why.</span></li>
+</ul>
+<p>&nbsp;</p>
+<p><span style="font-weight: 400;">Task 6:</span></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Explain level sampling in your own words and describe how you implemented it for texture mapping.</span></li>
+</ul>
+<p><strong>Based upon the looping from part 5, we will not only calculate uv but also calculate the dx_uv and dy_uv based on the barycentric coordinates of the x+1, y and x, y+1 respectively. Then we can plug in uv, dx_uv, dy_uv into the level formula that is taught in the class to get the corresponding level. The level we got&nbsp; will later be used in bilinear or nearest sampling method to retrieve the corresponding level in mipmap.</strong></p>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various techniques.</span></li>
+<p><strong>Pixel Sampling: a) nearest method: This method is much more efficient, since we only need to perform one look up/calculation to get the nearest point. b) bilinear method: In comparison, this method will sacrifice speed for better smoothness. The Bilinear method requires that we look up all surrounding four points and perform lerp calculations, thus more calculation is involved, and speed will decrease.</strong></p>
+<p><strong>Level sampling: a) nearest level: Similar to what nearest pixel sampling, level nearest sampling finds the nearest level, and directly applies that level on the later calculation. This method is the most efficient. b) bilinear level: The level bilinear sampling also sacrifices the speed for better smoothness. When bilinear level is applied, we find the floor level and ceil level, and do pixel sampling calculation respectively, then apply lerp function on each, which will hinder the performance. </strong></p>
+<p><strong>Supersampling: this method requires the most calculation and the memory usage; however, its antialiasing power is the best. The number of calculations and the memory usage will increase linearly with sample rate.</strong></p>
+<p><strong>Based on the observation of various png files, we found that the pixel bilinear method has greatly improved the smoothness of the picture. On the other hand, there is not much difference between level zero and level nearest. We think that the antialiasing power will depend on the picture we use and the modification we do to the picture, one method might work better than the other depending on the use case.</strong></p>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Using a </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> file you find yourself, show us four versions of the image, using the combinations of </span><span style="font-weight: 400;">L_ZERO</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">P_NEAREST</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">L_ZERO</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">P_LINEAR</span><span style="font-weight: 400;">, </span><span style="font-weight: 400;">L_NEAREST</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">P_NEAREST</span><span style="font-weight: 400;">, as well as </span><span style="font-weight: 400;">L_NEAREST</span><span style="font-weight: 400;"> and </span><span style="font-weight: 400;">P_LINEAR</span><span style="font-weight: 400;">.</span></li>
+<ul>
+<li style="font-weight: 400;"><span style="font-weight: 400;">To use your own </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;">, make a copy of one of the existing </span><em><span style="font-weight: 400;">svg</span></em><span style="font-weight: 400;"> files in </span><em><span style="font-weight: 400;">svg/texmap/</span></em><span style="font-weight: 400;"> (or create your own modelled after one of the provided </span><em><span style="font-weight: 400;">svg</span></em><span style="font-weight: 400;"> files). Then, near the top of the file, change the texture filename to point to your own </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;">. From there, you can run ./draw and pass in that svg file to render it and then save a screenshot of your results.</span></li>
+<li style="font-weight: 400;"><strong>Note</strong><span style="font-weight: 400;">: Choose a </span><em><span style="font-weight: 400;">png</span></em><span style="font-weight: 400;"> that showcases the different sampling effects well. You may also want to zoom in/out, use the pixel inspector, etc. to demonstrate the differences.</span></li>
+</ul>
+</ul>
+<div class="row">
+  <div class="column">
+    <b>Original</b>
+    <img src="tt.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>L0 Nearest</b>
+    <img src="L0_nearest.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>L0 Bilinear</b>
+    <img src="L0_bilinear.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>LNear Nearest</b>
+    <img src="LNear_nearest.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>LNear Bilinear</b>
+    <img src="LNear_bilinear.png" style="width:100%">
+  </div>
+</div>
+<p><br /><br /></p>
+
