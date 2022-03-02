@@ -1,27 +1,241 @@
-<html>
-	<head>
-	</head>
-	<body>
-		<h3>CS184/284A Project Webpages</h3>
-		<br><br>
-		<a href="/proj1/index.html">Project 1</a>
-		<br><br>
-		<a href="/proj2/index.html">Project 2</a>
-		<br><br>
-		<a href="/proj3-1/index.html">Project 3-1</a>
-		<br><br>
-		<a href="/proj3-2/index.html">Project 3-2</a>
-		<br><br>
-		<a href="/proj4/index.html">Project 4</a>
-	</body>
-	<script>
-		var links = document.body.getElementsByTagName("a")
-		var a = window.location.href.indexOf(".io")
-		var repo_name = window.location.href.substring(a+3)
-		for(var i = 0; i < links.length; i++){
-			var link = links[i]
-			var actual_name = link.href.substring(link.href.indexOf(".io")+4)
-			link.href = repo_name + actual_name
-		}
-	</script>
-</html>
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #181717;
+      background-color: #f7ecec;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+    img {
+      border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    width: 300px;
+    }
+    .center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    }
+    .right {
+      float: right;
+    }
+    .left {
+      float: left;
+    }
+    .column {
+    float: left;
+    width: 25%;
+    padding: 20px;
+  }
+  
+  /* Clear floats after image containers */
+  .row::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  </style>
+  <title>CS 184 Meshedit</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+  </head>
+  
+  
+  <body>
+  
+  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+  <h1 align="middle">Project 2: Meshedit</h1>
+  <h2 align="middle">Kenny Liao, Mark Chan, CS184</h2>
+  
+  <h3 text-align="center"><Storng>OVERALL SUMMARY</h3>
+  <p><Strong>In this project, we explored how we could use Castelijau’s algorithm to evaluate Bezier curves, which could then be used to evaluate Bezier surfaces, and how to represent different meshies using the halfedge data structure with the vertex, face, edge iterators. Using Casteljau’s algorithm, we can recursively evaluate Bezier Curves. We can then apply this idea to find the given parameter (u, v) on Bezier surfaces. With halfedge data structures, we learned that we can traverse through the mesh like a linked-list. With the data structure in mind, we can perform operations to flip and split edges without messing up the original structure. Last, with the flip and split operations, we can perform loop subdivision to upgrade simple meshes to high resolution ones by splitting the triangles and flipping edges when supposed to. </Strong></p>
+  <p><br />
+  <p><span style="font-weight: 400;">Task 1:&nbsp;</span></p>
+  <p>&nbsp;</p>
+
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain de Casteljau's algorithm and how you implemented it in order to evaluate Bezier curves.</span></li>
+  </ul>
+  <p><strong>Casteljau’s algorithm is an algorithm that recursively evaluates Bezier Curves. For each control point, the algorithm takes a point in between the point and the point after the point according to some t (linear interpolation). It recursively does the linear interpolation and gets a final point that lies on the Bezier surface according to the control points.</strong></p>
+  
+  <ul>
+    <li style="font-weight: 400;"><span style="font-weight: 400;">Show screenshots of each step / level of the evaluation from the original control points down to the final evaluated point. Press E to step through. Toggle C to show the completed Bezier curve as well.</span></li>
+  </ul>
+  <div class="row">
+    <div class="column">
+      <b>1st Step</b>
+      <img src="./image/Q1-0.png" style="width:90%">
+    </div>
+    <div class="column">
+      <b>2nd Step</b>
+      <img src="./image/q1-2.png" style="width:90%">
+    </div>
+    <div class="column">
+      <b>3th Step</b>
+      <img src="./image/q1-3.png" style="width:90%">
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">
+      <b>4th Step</b>
+      <img src="./image/q1-4.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>5th Step</b>
+      <img src="./image/Q1-5.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>6th Step</b>
+      <img src="./image/Q1-6.png" style="width:100%">
+    </div>
+  </div>
+  <ul>
+    <li style="font-weight: 400;"><span style="font-weight: 400;">Show a screenshot of a slightly different Bezier curve by moving the original control points around and modifying the parameter tt via mouse scrolling.</span></li>
+  </ul>
+  <img src="./image/q1_moved_curve.png" class="center">
+
+  <p><span style="font-weight: 400;">Task 2:&nbsp;</span></p>
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain how de Casteljau algorithm extends to Bezier surfaces and how you implemented it in order to evaluate Bezier surfaces.</span></li>
+</ul>
+<p><strong>de Casteljau's algorithm can be applied multiple times to find the corresponding point on a Bézier surface p(u,v) given (u,v). First, I will use point u to evaluate the Bezier curves using the 1D Casteljau algorithm in u. Then with the control points of the Bezier curve, I can pass them into the 1D Casteljau again to evaluate the v.</strong></p>
+  
+<li style="font-weight: 400;"><span style="font-weight: 400;">Show a screenshot of bez/teapot.bez (not .dae) evaluated by your implementation.</span></li>
+<img src="./image/q2-real.png" class="center">
+
+<p><span style="font-weight: 400;">Task 3:&nbsp;</span></p>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain how you implemented the area-weighted vertex normals.</span></li>
+</ul>
+<p><strong>Iterate through all the faces incident to the vertex. During each iteration, calculate the normal of each face by taking the cross product of two vectors (j-i and k-i respectively, where i is the vertex). After all the normals are collected, normalize it through .unit().</strong></p>
+
+
+<ul>
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Show screenshots of dae/teapot.dae (not .bez) comparing teapot shading with and without vertex normals. Use Q to toggle default flat shading and Phong shading.* Briefly explain how you implemented the area-weighted vertex normals.</span></li>
+</ul>
+<div class="row">
+  <div class="column">
+    <b>Before</b>
+    <img src="./image/q3_1.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>After</b>
+    <img src="./image/q3_2.png" style="width:100%">
+  </div>
+</div>
+
+<p><span style="font-weight: 400;">Task 4:&nbsp;</span></p>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used.</span></li>
+</ul>
+<p><strong>I started with only reassigning pointers for the half-edges, but it ended up resulting in black triangles when I tried to flip it. Then I tried including the edges by reassigning pointers of the edges that were moved. I was able to flip the edge once without bugging but when I tried flipping the same edge again it resulted in a black triangle. Finally I followed the spec’s advice of reassigning all the pointers for all the elements that the two triangles had involved. I tried to fetch/assign orders counterclockwise according to the face of the triangle to make sure I got the orders correct.</strong></p>
+
+<ul>
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Show screenshots of a mesh before and after some edge flips</span></li>
+</ul>
+<div class="row">
+  <div class="column">
+    <b>Before flipping</b>
+    <img src="./image/q4_before.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>After flipping</b>
+    <img src="./image/q4_after.png" style="width:100%">
+  </div>
+</div>
+
+
+<p><span style="font-weight: 400;">Task 5:&nbsp;</span></p>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain how you implemented the edge split operation and describe any interesting implementation / debugging tricks you have used.</span></li>
+</ul>
+<p><strong>First, gather all the half edges, vertices, edges, and faces from the original triangle meshes. Then based on the new triangle meshes it will become, create new half edges, vertices, edges, and faces. After all the needed components are created, use setNeighbors() to set up all the half edges. Lastly, update all the vertices, edges, and faces with corresponding half edges.</strong></p>
+<img src="./image/q5_written.jpg">
+
+<ul>
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Show screenshots of a mesh before and after some edge splits.</span></li>
+</ul>
+<div class="row">
+  <div class="column">
+    <b>Before</b>
+    <img src="./image/q5_1.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>After</b>
+    <img src="./image/q5_2.png" style="width:100%">
+  </div>
+</div>
+
+<ul>
+  <li style="font-weight: 400;"><span style="font-weight: 400;">Show screenshots of a mesh before and after a combination of both edge splits and edge flips.</span></li>
+</ul>
+<div class="row">
+  <div class="column">
+    <b>Before</b>
+    <img src="./image/q5_1.png" style="width:100%">
+  </div>
+  <div class="column">
+    <b>After</b>
+    <img src="./image/q5_3.png" style="width:100%">
+  </div>
+</div>
+
+<p><span style="font-weight: 400;">Task 6:&nbsp;</span></p>
+<li style="font-weight: 400;"><span style="font-weight: 400;">Briefly explain how you implemented the loop subdivision and describe any interesting implementation / debugging tricks you have used.</span></li>
+</ul>
+<p><strong>The implementation that we did follows the 5 procedures given in Part 6.
+  Step1: Compute the new position of all vertices using this formula ((1 - n * u) * original_position + u * original_neighbor_position_sum )) and store the new position in v->newPosition.
+  Step2: Compute the updated vertex positions associated with edges using this formula (3/8 * (A + B) + 1/8 * (C + D)) and store the new position in e->newPosition.
+  Step3: Split all the original edges and update the vertices to its new position that is previously stored in e->newPosition.
+  Step4: flip any new edge that contains one old and one new vertex.
+  Step5: update the vertices to new vertex positions.
+  Interesting implementation: for step3, we cannot iterate through all the edges by simple for loop with edgeBegin() and edgeEnd(). We need to use a counter to count how many edges we iterate through, and only increment the counter when the edge is not new. This is because splitEdge() will create new edges that are not part of the original edges.
+  </strong></p>
+
+  <ul>
+    <li style="font-weight: 400;"><span style="font-weight: 400;">Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges?</span></li>
+  </ul>
+  The sharp corners and edges become more rounded. Have tried some pre-splitting, didn’t see much improvement 
+  <div class="row">
+    <div class="column">
+      <b>subdivision 0</b>
+      <img src="./image/q6_1.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 1</b>
+      <img src="./image/q6_2.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 2</b>
+      <img src="./image/q6_3.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 3</b>
+      <img src="./image/q6_4.png" style="width:100%">
+    </div>
+  </div>
+
+  <ul>
+    <li style="font-weight: 400;"><span style="font-weight: 400;">Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.</span></li>
+  </ul>
+  I did one pre-splitting before any loop subdivision, the loop subdivision cube became more symmetrical.  <div class="row">
+    <div class="column">
+      <b>subdivision 0</b>
+      <img src="./image/q6_5.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 1</b>
+      <img src="./image/q6_6.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 2</b>
+      <img src="./image/q6_7.png" style="width:100%">
+    </div>
+    <div class="column">
+      <b>subdivision 3</b>
+      <img src="./image/q6_8.png" style="width:100%">
+    </div>
+  </div>
