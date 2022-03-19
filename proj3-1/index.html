@@ -1,7 +1,451 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <style>
+      div.padded {
+        padding-top: 0px;
+        padding-right: 100px;
+        padding-bottom: 0.25in;
+        padding-left: 100px;
+      }
+    </style>
+    <title>Your Name | CS 184</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+  </head>
+  <body>
+    <br />
+    <h1 align="middle">Assignment 3: PathTracer</h1>
+    <h2 align="middle">Kenny Liao, Mark Chan</h2>
+
+    <div class="padded">
+      <p>
+        In this project, we first explored how to properly generate ray and test
+        intersections which will be heavily used in future parts. We found out
+        different ways to test intersections for spheres and triangles,
+        including optimized methods like Moller Trumbore. In the next section,
+        we further accelerated our algorithm by implementing the bvh, which is a
+        bounding box in leaf nodes of a tree. By using the bounding box, we can
+        just see if it intersects with the box, then we do triangle intersection
+        test instead of doing triangle intersection test for all primitives.
+        Next, we completed estimate_direct _lighting_hemisphere, which sampled
+        the incoming light onto the hit point by calling the get_sample
+        function, and checked for intersection and if not we gathered the
+        radiences. We also did the Estimate_direct_lighting_importance function,
+        which is that for each light source, sample the outgoing light source
+        light by calling the sample_L function. This time if there is an
+        intersection, we collect the radiance of this light. After all the light
+        source light has been collected, average out the radiance before
+        returning. Next, in part 4, we implemented the indirect lighting
+        function, which has a bulk of its logic in the
+        at_least_one_bounce_radiance function. As its name suggests, we
+        calculated the necessary bsdf, wi, hit_point, etc for this bounce, and
+        used russian roulette, intersection test, and ray depth to determine
+        whether we should recurse again on the at_least_one_bounce_radiance or
+        not, as energy dissipates throughout ray-bouncing. Last, we implemented
+        adaptive sampling which is a faster way to determine whether we should
+        continue tracing rays or not for a specific pixel. By calculating the
+        mean and standard deviation as we go on, we can determine the
+        convergence, which below a threshold, we can safely say that it has
+        converged and move on to the next pixel.
+      </p>
+
+      <h2 align="middle">Part 1: Ray Generation and Intersection</h2>
+      <p>
+        When rendering an image, after setting up pathtracer with a camera and
+        scene, we would need to trace rays to mimic the photons in the real
+        world. We would start by initiating rays based on the camera view point
+        and scene, and would start tracing the ray given the origin and
+        direction. Other properties, max_t, min_t, ray_depth should also be
+        taken into account. Next, we start tracing and are interested to see
+        whether the ray actually intersects with some of the objects in the
+        image. This is where primitive intersection comes into play. We perform
+        intersection tests of primitives, like triangle and sphere implemented,
+        to try to calculate how the ray in the world would go encountering this
+        similar situation.
+      </p>
+      <p>
+        Desired to determine intersections, we implemented the moller trumbore
+        algorithm to get the t, b1, and b2 value, where t is time, b1 and b2 are
+        the barycentric coordinates. Thus, by determining if the t is within the
+        r.min_t and r.max_t and b1,b2, and b3 barycentric coordinates is valid
+        (inside triangle), we can determine if the ray intersects or not.
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q1_Moller-Trumbore.png" width="480px" />
+              <figcaption align="middle">Moller Trumbore Algorithm</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div align="center">
+        <p>
+          After implementing, we are able to render images with normal shading
+          for a few small .dae files
+        </p>
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q1_bench.png" width="480px" />
+              <figcaption align="middle">Small .dae: Bench</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q1_CBcoil.png" width="480px" />
+              <figcaption align="middle">Small .dae: CBcoil</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q1_CBempty.png" width="480px" />
+              <figcaption align="middle">Small .dae: CBempty</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q1_CBspheres.png" width="480px" />
+              <figcaption align="middle">Small .dae: CBspheres</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <h2 align="middle">Part 2: Bounding Volume Hierarchy</h2>
+      <p>
+        I first recurse through the primitives from start to end and add them
+        into bbox and expand the bounding box while checking the amount of
+        primitives. If the amount is lesser than max_leaves, we just create a
+        leaf node and set the start and end of the node. Otherwise, I used the
+        heuristic of the longest axis as my splitting rule and partitioned the
+        array with appropriate start and end iterators properly for the next
+        recursion (left and right).
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/CBlucy.png" width="480px" />
+              <figcaption align="middle">
+                CBlucy: A large .dae file rendered with accelerated structures
+              </figcaption>
+            </td>
+          </tr>
+        </table>
+        <table style="width=100%">
+          <p>
+            From the two results below we can tell that there is a huge
+            difference in rendering time for the same picture. With
+            acceleration, we used BVH to divide primitives into bounding boxes
+            and group them into trees. We traverse down the tree to the child
+            node which contains primitives. Throughout traversing, we test
+            whether the ray intersects with the bounding box or not instead of
+            the primitives which saves us huge amounts of time. Hence, we can
+            see the difference between rendering speed (0.0339s) vs (16.7294s).
+            Because in the naive solution, we are having 803 intersections tests
+            per ray vs only 1.52 in the accelerated version, which contributes
+            to the slow rendering speed.
+            <tr>
+              <td align="middle">
+                <img src="images/without_acce.png" width="480px" />
+                <figcaption align="middle">
+                  Time Difference: Without Acceleration Structure
+                </figcaption>
+              </td>
+            </tr>
+
+            <tr>
+              <td align="middle">
+                <img src="images/with_acce.png" width="480px" />
+                <figcaption align="middle">
+                  Time Difference: With Acceleration Structure
+                </figcaption>
+              </td>
+            </tr>
+          </p>
+        </table>
+      </div>
+
+      <h2 align="middle">Part 3: Direct Illumination</h2>
+      <p>
+        In this part we implemented two ways of direct lighting. 1.
+        Estimate_direct _lighting_hemisphere: sample the incoming light onto the
+        hit point by calling the hemisphereSampler->get_sample() function. For
+        each incoming light, measure if there’s any interference by calling the
+        intersect function, if there is no interference, gather the incoming
+        radiance. Lastly, average out the radiance before returning. 2.
+        Estimate_direct_lighting_importance: the logic for this part is the
+        opposite of the previous part. For each light source, sample the
+        outgoing light source light by calling light->sample_L function. This
+        time if there is intersection that means the light source light
+        intersects with the hitting point, thus we collect the radiance of this
+        light. After all the light source light has been collected, average out
+        the radiance before returning
+      </p>
+      <div align="center">
+        <p>
+          Images Rendered with both implementations of the direct lighting
+          function
+        </p>
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q3_CBcoil_64_32.png" width="480px" />
+              <figcaption align="middle">CBcoil.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_blob_64_32.png" width="480px" />
+              <figcaption align="middle">Blob.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_dragon_64_32.png" width="480px" />
+              <figcaption align="middle">Dragon.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_bunny_64_32.png" width="480px" />
+              <figcaption align="middle">Bunny.png</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        Next, we compare the results between uniform hemisphere sampling and
+        lighting sampling in a one-paragraph analysis.
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q3_dragon_1.png" width="480px" />
+              <figcaption align="middle">Dragon_with_1_rays.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_dragon_4.png" width="480px" />
+              <figcaption align="middle">Dragon_with_4_rays.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_dragon_16.png" width="480px" />
+              <figcaption align="middle">Dragon_with_16_rays.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q3_dragon_64.png" width="480px" />
+              <figcaption align="middle">Dragon_with_64_rays.png</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        In conclusion, the rendering with a uniform hemisphere method is more
+        noisy than the one with light sampling method. This is because the
+        uniform hemisphere method is calculated by emitting sample rays in a
+        uniform manner; on the other hand, the light sampling method collects
+        light rays directly from the light source. By emitting light rays from
+        the light source directly, we only collect light rays that contribute
+        more to the lighting and are more important to the scene. Thus, the
+        light sampling method will give us a better result.
+      </p>
+      <h2 align="middle">Part 4: Global Illumination</h2>
+      <p>
+        Based on the given parameter, we find the hit_p (intersection point),
+        then for that particular intersection, we first calculate the one bounce
+        radiance. Then we do russian roulette to determine if we keep
+        calculating the bounce radiance (more than one bounce radiance) or not.
+        If true, we first check whether the bounce light intersects with any
+        object. If it intersects then we recursively call this function until
+        the ray depth is 1 or the russian roulette stops the recursion.
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q4_explanation.png" width="480px" />
+              <figcaption align="middle">based on lecture slide</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <p>Some images with 1024 samples per pixel:</p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q4_spheres1024.png" width="480px" />
+              <figcaption align="middle">sphere1024.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny100.png" width="480px" />
+              <figcaption align="middle">CBunny1024.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_blob1024.png" width="480px" />
+              <figcaption align="middle">blob1024.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_bench1024.png" width="480px" />
+              <figcaption align="middle">bench1024.png</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <p>
+        For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1,
+        2, 3, and 100 (the -m flag).
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny0.png" width="480px" />
+              <figcaption align="middle">CBunny0.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny1.png" width="480px" />
+              <figcaption align="middle">CBunny1.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny2.png" width="480px" />
+              <figcaption align="middle">CBunny2.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny3.png" width="480px" />
+              <figcaption align="middle">CBunny3.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/q4_CBbunny100.png" width="480px" />
+              <figcaption align="middle">CBunny100.png</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p>
+        Pick one scene and compare rendered views with various sample-per-pixel
+        rates, including at least 1, 2, 4, 8, 16, 64, and 1024.
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/pixel_1.png" width="480px" />
+              <figcaption align="middle">pixel_1.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/pixel_2.png" width="480px" />
+              <figcaption align="middle">pixel_2.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/pixel_4.png" width="480px" />
+              <figcaption align="middle">pixel_4.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/1024_8.png" width="480px" />
+              <figcaption align="middle">pixel_8.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/pixel_64.png" width="480px" />
+              <figcaption align="middle">pixel_64.png</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/pixel_1024.png" width="480px" />
+              <figcaption align="middle">pixel_1024.png</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <h2 align="middle">Part 5: Adaptive Sampling</h2>
+      <p>
+        In this part, we implemented adaptive sampling. In the loop of
+        raytrace_pixel, for each iteration, I collect the rgb values and add
+        them to s1 and s2 respectively. I then compute the mean and standard
+        deviation using s1 and s2 of the traced samples. Finally, I calculate
+        the convergence using mean and standard deviation and compare it to
+        tolerance. I just break the loop if it converges which means we don’t
+        need to trace anymore.
+      </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/p5_last_pic_rate.png" width="480px" />
+              <figcaption align="middle">
+                Rate of Bunny with 2048 pixels, sample per light and 5 for max
+                ray depth.
+              </figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/p5_last_pic.png" width="480px" />
+              <figcaption align="middle">
+                Noisy-free rendering of Bunny with 2048 pixels, sample per light
+                and 5 for max ray depth.
+              </figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
 </html>
