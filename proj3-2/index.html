@@ -1,7 +1,238 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <style>
+      div.padded {
+        padding-top: 0px;
+        padding-right: 100px;
+        padding-bottom: 0.25in;
+        padding-left: 100px;
+      }
+    </style>
+    <title>Your Name | CS 184</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+  </head>
+  <body>
+    <br />
+    <h1 align="middle">Assignment 3-2: PathTracer</h1>
+    <h2 align="middle">Kenny Liao, Mark Chan</h2>
+
+    <div class="padded">
+      <p>For this project, we did part 1 and part 2.
+        In part 1, we first implemented the reflect function based on the perfect specular reflection. Then we implemented the mirror’s sample_f by calling the reflect function and stored the reflection in wi. Then, for refraction, we implemented it based on the snell’s law. In this function, we also determined whether the refraction occurs based on total internal reflection. Lastly, we implemented the glass’s sample_f function. In this function, we first determine whether it’s a total internal reflection. If it is a total reflection, we implement it the same way as we implement the mirror’s sample_f function. Otherwise, we implemented Schlick's approximation to decide the ratio of reflection and refraction.
+        In part 2, we enabled rendering of microfacet models, which are isotropic rough conductors that only reflect. We follow the four tasks which break the BRDF evaluation function into four parts: Fresnel term, shadowing-masking term, normal distribution function. We first implemented the normal distribution function, which we used the Beckmann distribution. Then, we calculated the R,G,B values for the Fresnel term to get the F term. Last, we implemented importance sampling by ​​sampling theta_h and phi_h based on some pdfs. We can then calculate h, the normal of the microfacet. Reflecting on wo, we can get sampled incident direction wi, which can then used to render our microfacet model.
+        </p>
+
+      <h2 align="middle">Part 1: Mirror and Glass Materials</h2>
+      <div align="center">
+        <p>
+          A sequence of six images of scene CBspheres.dae rendered with
+          max_ray_depth set to 0, 1, 2, 3, 4, 5, and 100.
+        </p>
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay0.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay0</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_ maxRay1.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay1</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay2.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay2</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay3.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay3</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay4.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay4</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay5.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay5</figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBspheres_maxRay100.png" width="480px" />
+              <figcaption align="middle">CBspheres maxRay100</figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p>NEW MULTIBOUNCE EFFECTS THAT APPEAR IN EACH IMAGE</p>
+
+      <p>Max_ray_depth 0: Can only see the light source.</p>
+
+      <p>
+        Max_ray_depth 1: Compared to the max_ray_depth 0, the environment beside
+        the ceiling is lit up by the bouncing light; however, the two balls are
+        still dark.
+      </p>
+
+      <p>
+        Max_ray_depth 2: Compared to the max_ray_depth 1, the ceiling and the
+        left ball are both lit up by the bouncing light. Overall the lighting is
+        also much brighter, especially the shadow underneath both balls.
+      </p>
+
+      <p>
+        Max_ray_depth 3: Compared to the max_ray_depth 2, max_ray_depth 3’s
+        right ball is rendered correctly. The dark part on the bottom of the
+        left ball is also filled with the bouncing light. The shadow also
+        becomes brighter on the right ball through additional bouncing light.
+      </p>
+
+      <p>
+        Max_ray_depth 4: Compared to the max_ray_depth 3, max_ray_depth 4’s left
+        ball successfully reflect the ball on the right side, where as the the
+        reflection of the right ball on the left ball is completely dark in the
+        max_ray_depth 3 image. Additionally, the right ball looks more realistic
+        at max_ray_depth 4.
+      </p>
+
+      <p>
+        Max_ray_depth 5: The increment from 4 to 5 on max_ray_depth doesn’t seem
+        to improve anything. Max_ray_depth is more realistic than max_ray_depth
+        4, but the change is subtle.
+      </p>
+
+      <p>
+        Max_ray_depth 100: As the number of bounce increases, the effect that it
+        contributes to the overall image decreases. Thus there’s not much
+        difference between max_ray_depth 5 and 100.
+      </p>
+
+      <p>
+        HOW THESE BOUNCE NUMBERS RELATE TO THE PARTICULAR EFFECTS THAT APPEAR
+      </p>
+
+      <p>
+        Environment lighting beside ceiling: only one bounce of light, thus the
+        ceiling will not be lit up. Balls also require more than one bounce of
+        light, thus all the balls are dark.
+      </p>
+
+      <p>
+        Ceiling: when the max_ray_depth reaches 2, the retrace light is able to
+        reach the light source through other walls, which light up the ceiling.
+      </p>
+
+      <p>
+        Left ball reflection: similar reason to the ceiling one. When the
+        max_ray_depth reaches 2, the retrace light from the left ball reaches
+        the light source, which lights up the left ball and gives the reflection
+        effect.
+      </p>
+
+      <p>
+        Right ball refraction: refraction needs one more light bounce to make
+        possible, since the light needs to refract into the ball when it
+        intersects with the ball. Thus when the max_ray_depth reaches 3, we can
+        see the right ball refraction effect.
+      </p>
+
+      <p>
+        Left ball reflection of the right ball: As the right ball refraction
+        requires 3 ray_depth, the left ball reflection of the right ball
+        requires one more bouncing light after the right ball is correctly
+        refracted.
+      </p>
+
+      
+      <h2 align="middle">Part 2: Microfacet Material</h2>
+      <div class="padded">
+  
+        <div align="center">
+          <p>
+            A sequence of six images of scene CBspheres.dae rendered with
+            max_ray_depth set to 0, 1, 2, 3, 4, 5, and 100.
+          </p>
+          <table style="width=100%">
+            <tr>
+              <td align="middle">
+                <img src="images/Cdrag_microfacet_alpha0.005.png" width="480px" />
+                <figcaption align="middle">CBDragon_alpha=0.005</figcaption>
+              </td>
+            </tr>
+  
+            <tr>
+              <td align="middle">
+                <img src="images/Cdrag_microfacet_alpha0.05.png" width="480px" />
+                <figcaption align="middle">CBDragon_alpha=0.05</figcaption>
+              </td>
+            </tr>
+  
+            <tr>
+              <td align="middle">
+                <img src="images/Cdrag_microfacet_alpha0.25.png" width="480px" />
+                <figcaption align="middle">CBDragon_alpha=0.25</figcaption>
+              </td>
+            </tr>
+  
+            <tr>
+              <td align="middle">
+                <img src="images/Cdrag_microfacet_alpha0.5.png" width="480px" />
+                <figcaption align="middle">CBDragon_alpha=0.5</figcaption>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <table style="width=100%">
+          <p>
+            We can tell that as we increase the alpha term, the smoother the macro surface will be, hence the surface diffuses more, which results in a darker looking appearance.
+            On the other hand, as we decrease the alpha term, the rougher the surface becomes and it becomes more glossy, which results in a more shiny, metal like looking dragon.
+          </p>
+      <div align="center">
+        <table style="width=100%">
+          <tr>
+            <td align="middle">
+              <img src="images/CBbunny_hemisphere.png" width="480px" />
+              <figcaption align="middle">
+                CBbunny with cosine hemisphere sampling 
+              </figcaption>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="middle">
+              <img src="images/CBbunny_samplef.png" width="480px" />
+              <figcaption align="middle">
+                CBbunny with cosine importance sampling 
+              </figcaption>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <table style="width=100%">
+        <tr>
+          <td align="middle">
+            <img src="images/CBdragon_carbon.png" width="480px" />
+            <figcaption align="middle">CBdragon_carbon with eta value of <2.4124 2.4228 2.4346> and k of <0 0 0>, which corresponds to carbon.</figcaption>
+          </td>
+        </tr>
+    </div>
+  </body>
 </html>
