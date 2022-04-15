@@ -31,7 +31,9 @@
 <div>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+<p>In this project, we implemented physical simulation of objects and clothes. In the first part, we implemented the wireframe objects with three different constraints which would be our clothes. Next, we implemented simulations via numerical integration with the formulas taught in class including mass and springs with forces. We are able to see the cloth get pinned and slowly get pulled by gravity after this part. Next, we implemented clothes falling onto surfaces: sphere and plane, which require us to calculate the intersection point in addition to the physical simulation. Next, we implemented self collide which is also a natural thing that we need to take into consideration. Looping through the points would be O(n^2) which is too slow, so we implemented the spatial map and took the pointmass into account using the efficient way. Last, 
+  We implemented Diffuse, Blinn-Phong, Texture Mapping, Bump & Displacement Map, and Mirror shaders using knowledge from previous lectures and map the different textures and models onto the clothes.
+  </p>
 
 <h2 align="middle">Part I: Masses and springs</h2>
 <table style="width=100%">
