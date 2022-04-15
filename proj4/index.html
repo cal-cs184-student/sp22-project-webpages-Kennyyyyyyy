@@ -1,7 +1,334 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 4 here
-	</body>
-</html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #e4dada;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">Kenny Liao, Mark Chan</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+
+<h2 align="middle">Part I: Masses and springs</h2>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_01.png" width="480px" />
+      <figcaption align="middle">pinned2.json</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_02.png" width="480px" />
+      <figcaption align="middle">pinned2.json</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_03.png" width="480px" />
+      <figcaption align="middle">pinned2.json</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_onlyShearing.png" width="480px" />
+      <figcaption align="middle">Only Shearing</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_noShearing.png" width="480px" />
+      <figcaption align="middle">No Shearing</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q1_withAll.png" width="480px" />
+      <figcaption align="middle">All constraints</figcaption>
+    </td>
+  </tr>
+</table>
+
+<h2 align="middle">Part 2: Simulation via numerical integration</h2>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_500Ks.png" width="480px" />
+      <figcaption align="middle">q2_500Ks</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_5000Ks.png" width="480px" />
+      <figcaption align="middle">q2_5000Ks</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_50000Ks.png" width="480px" />
+      <figcaption align="middle">q2_50000Ks</figcaption>
+    </td>
+  </tr>
+</table>
+  <p>When the Ks value increases, the cloth seems to be more stretched.</p>
+  <table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_density1point5.png" width="480px" />
+      <figcaption align="middle">1.5 Density</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_density15.png" width="480px" />
+      <figcaption align="middle">15 Density</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_density150.png" width="480px" />
+      <figcaption align="middle">150 Density</figcaption>
+    </td>
+  </tr>
+</table>
+<p>As the density increases, the top portion of the cloth seems to drop lower.</p>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_damp02.png" width="480px" />
+      <figcaption align="middle">0.2 Damping</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_damp05.png" width="480px" />
+      <figcaption align="middle">0.5 Damping</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q2_damp10.png" width="480px" />
+      <figcaption align="middle">1.0 Damping</figcaption>
+    </td>
+  </tr>
+</table>
+<p>There doesn't seem to be a big difference beside the different colors when rendering.</p>
+<img src="./images/q2_pinned4.png">
+
+
+<h2 align="middle">Part 3: Handling collisions with other objects:</h2>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q3_sphere500.png" width="480px" />
+      <figcaption align="middle">ks=500</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q3_sphere5000.png" width="480px" />
+      <figcaption align="middle">ks=5000</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q3_sphere50000.png" width="480px" />
+      <figcaption align="middle">ks=50000</figcaption>
+    </td>
+  </tr>
+</table>
+<p>The difference is very obvious. When the Ks value increases, there are less folds on the cloth. </p>
+<h3> Shaded cloth lying peacefully at rest on the plane. /h3>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/3-2-1.png" width="480px" />
+      <figcaption align="middle">Cloth on Plane</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/3-2-2.png" width="480px" />
+      <figcaption align="middle">Cloth on Plane</figcaption>
+    </td>
+  </tr>
+</table>
+
+<h2 align="middle">Part 4: Handling self-collisions</h2>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/4-1.png" width="480px" />
+      <figcaption align="middle">Cloth Falls and self collide-1</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/4-2.png" width="480px" />
+      <figcaption align="middle">Cloth Falls and self collide-2</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/4-3.png" width="480px" />
+      <figcaption align="middle">Cloth Falls and self collide-3</figcaption>
+    </td>
+  </tr>
+  <tr>
+    <td align="middle">
+      <img src="./images/4-4.png" width="480px" />
+      <figcaption align="middle">Cloth Falls and self collide-4</figcaption>
+    </td>
+  </tr>
+</table>
+<p>I varied the density using density=1, 5, 100, 1000, and I observed that the more dense the cloth is, the faster it falls on the plane and that when self collides, lighter once typically bounce further away. This makes sense since the lighter the cloth is, the more it will be affected by air as gravity would result in a lighter force on smaller density objects, hence would result in the behavior described above.
+  On the other hand, I adjusted KS with 1,5, 100, 1000 as well. I observed that when KS is big, there seems to be less micro-folding in the cloth. When KS is small, there are more foldings when the cloth falls onto the plane in addition to the self collisions I implemented.
+  </p>
+
+  <h2 align="middle">Part 5: Sharders</h2>
+  <h3>Shader model Explanation:</h3>
+  <p>
+    A shader program is a computer graphics program that is used for shading in 3D scenes. Vertex shader transforms the vertices and modifies position and normal vectors, and outputs the final position which can be used by the fragment shader. Fragment shader takes in the various geometric attributes and generates the out color.  
+  </p>
+  <h3>Blinn-Phong Explanation:</h3>
+  <p>
+    Blinn-Phong shading model is a reflection model that includes specular reflection, diffuse reflection, and ambient reflection.  </p>
+  <table style="width=100%">
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_ambient.png" width="480px" />
+        <figcaption align="middle">Ambient Component</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_diffuse.png" width="480px" />
+        <figcaption align="middle">Diffuse Component</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_specular.png" width="480px" />
+        <figcaption align="middle">Specular Component</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_fullPhong.png" width="480px" />
+        <figcaption align="middle">Blinn Phong</figcaption>
+      </td>
+    </tr>
+  </table>
+  <img src='./images/q5_texture.png'>
+  <table style="width=100%">
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_bump01.png" width="480px" />
+        <figcaption align="middle">Bump Sphere</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_bump02.png" width="480px" />
+        <figcaption align="middle">Bump Cloth</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_bump03.png" width="480px" />
+        <figcaption align="middle">Bump Both</figcaption>
+      </td>
+    </tr>
+  </table>
+
+  <table style="width=100%">
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_displacement01.png" width="480px" />
+        <figcaption align="middle">Displacement Sphere</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_displacement02.png" width="480px" />
+        <figcaption align="middle">Displacement Cloth</figcaption>
+      </td>
+    </tr>
+  
+    <tr>
+      <td align="middle">
+        <img src="./images/q5_displacement03.png" width="480px" />
+        <figcaption align="middle">Displacement Both</figcaption>
+      </td>
+    </tr>
+  </table>
+  <p>Comparison: Under the same parameter, Bump and Displacement seem to be very similar. Displacement shading might be slightly more realistic than Bump shading.</p>
+<h3>Mirror Effect</h3>
+<table style="width=100%">
+  <tr>
+    <td align="middle">
+      <img src="./images/q5_mirror01.png" width="480px" />
+      <figcaption align="middle">Mirror Effect1</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q5_mirror02.png" width="480px" />
+      <figcaption align="middle">Mirror Effect2</figcaption>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="middle">
+      <img src="./images/q5_mirror03.png" width="480px" />
+      <figcaption align="middle">Mirror Effect3</figcaption>
+    </td>
+  </tr>
+</table>
